@@ -2,7 +2,7 @@
 
 <div align="center">
 <p>
-<img src="segmentation_example.gif" width="800"/> 
+<img src="segmented_video.gif" width="800"/> 
 </p>
 <br>
 <div>

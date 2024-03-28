@@ -2,13 +2,9 @@
 
 <div align="center">
 <p>
-<img src="segmented_video.gif" width="800"/> 
+<img src="blob_segmentation.gif" width="800"/> 
 </p>
 <br>
-<div>
-<img src="blob.gif" width="800"/> 
-<br>
-</div>
 </div>
 
 ## Introduction

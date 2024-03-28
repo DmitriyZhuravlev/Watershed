@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import imageio
+from PIL import Image, ImageSequence
 import os
 
 # Function to perform segmentation on a single frame
@@ -101,8 +101,8 @@ def remove_small_components(mask, min_size, kernel = np.ones((3, 3), np.uint8)):
 
 
 # Open the video file
-cap = cv2.VideoCapture(r"/home/dmytrozhuravlov/cv/code/Moving-Objects-Segmentation-main/input/highway.mp4")
-bg_frame = cv2.imread("/home/dmytrozhuravlov/cv/code/Moving-Objects-Segmentation-main/output/highway/cleanBG.jpg")
+cap = cv2.VideoCapture(r"highway.mp4")
+bg_frame = cv2.imread("cleanBG.jpg")
 
 # Create a temporary directory to store individual frames
 temp_dir = 'temp_frames'
@@ -153,31 +153,31 @@ while cap.isOpened():
     draw_rectangles(colored_segments, valid_blobs)
     
     # Overlay the original frame with the colored segmented frame
-    overlay = cv2.addWeighted(frame, 0.5, colored_segments, 0.5, 0)
+    overlay = cv2.addWeighted(frame, 0.5, colored_segments, 0.5, 1)
 
-    # Show the frame with rectangles over blobs
-    #cv2.imshow("Frame with Blobs", overlay)
-
-    # Resize the frame while maintaining aspect ratio
-    height, width, _ = overlay.shape
-    target_width = 800  # Define the target width
-    target_height = int(height / (width / target_width))  # Calculate the target height
-    resized_overlay = cv2.resize(overlay, (target_width, target_height), interpolation=cv2.INTER_LANCZOS4)
-    
     # Save frame to temporary directory
-    cv2.imwrite(os.path.join(temp_dir, f'{frame_count:05d}.jpg'), resized_overlay)
+    cv2.imwrite(os.path.join(temp_dir, f'{frame_count:05d}.jpg'), overlay)
     frame_count += 1
 
 # Release the video capture object
 cap.release()
 
 # Create GIF from saved frames
-with imageio.get_writer('output.gif', duration=0.05) as gif_writer:
-    for i in range(frame_count):
-        frame_path = os.path.join(temp_dir, f'{i:05d}.jpg')
-        frame = imageio.imread(frame_path)
-        gif_writer.append_data(frame)
-        os.remove(frame_path)  # Delete temporary frame file
+frames = []
+total_size = 0
+for i in range(frame_count):
+    frame_path = os.path.join(temp_dir, f'{i:05d}.jpg')
+    frame = Image.open(frame_path)
+    total_size += os.path.getsize(frame_path)
+    frames.append(frame)
+    os.remove(frame_path)  # Delete temporary frame file
+    
+    if total_size > 11 * 1024 * 1024:  # Check if size exceeds 25 MB
+        frames.pop()  # Remove the last frame to keep the size within limit
+        break
+
+# Save GIF using Pillow with palette-based compression
+frames[0].save('output.gif', format='GIF', append_images=frames[1:], save_all=True, duration=50, loop=0, optimize=True)
 
 # Remove temporary directory
 os.rmdir(temp_dir)

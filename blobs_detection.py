@@ -53,6 +53,14 @@ def draw_rectangles(frame, blobs):
         # Draw rectangle over the blob
         cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
 
+def draw_rectangles_gray(frame, blobs):
+    for blob in blobs:
+        x, y, w, h = blob
+        # Draw rectangle over the blob
+        cv2.rectangle(frame, (x, y), (x+w, y+h), (255), 2)
+    
+    return frame
+
 # Function to merge touching segments into one blob (connected component)
 def merge_touching_segments(labels):
     # Create a binary mask for segments
@@ -152,11 +160,14 @@ while cap.isOpened():
     # Draw rectangles over blobs
     draw_rectangles(colored_segments, valid_blobs)
     
+    segmented_frame =  (segmented_frame * 255).astype(np.uint8)
+    draw_rectangles_gray(segmented_frame, valid_blobs)
+    
     # Overlay the original frame with the colored segmented frame
     overlay = cv2.addWeighted(frame, 0.5, colored_segments, 0.5, 1)
 
     # Save frame to temporary directory
-    cv2.imwrite(os.path.join(temp_dir, f'{frame_count:05d}.jpg'), overlay)
+    cv2.imwrite(os.path.join(temp_dir, f'{frame_count:05d}.jpg'), segmented_frame)
     frame_count += 1
 
 # Release the video capture object
@@ -172,9 +183,9 @@ for i in range(frame_count):
     frames.append(frame)
     os.remove(frame_path)  # Delete temporary frame file
     
-    if total_size > 11 * 1024 * 1024:  # Check if size exceeds 25 MB
-        frames.pop()  # Remove the last frame to keep the size within limit
-        break
+    # if total_size > 15 * 1024 * 1024:  # Check if size exceeds 25 MB
+        # frames.pop()  # Remove the last frame to keep the size within limit
+        # break
 
 # Save GIF using Pillow with palette-based compression
 frames[0].save('output.gif', format='GIF', append_images=frames[1:], save_all=True, duration=50, loop=0, optimize=True)

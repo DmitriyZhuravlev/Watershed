@@ -6,6 +6,7 @@
 </p>
 <br>
 <div>
+<img src="blob.gif" width="800"/> 
 <br>
 </div>
 </div>
